@@ -1,10 +1,9 @@
 #pragma once
 
 #include<library/system/Console.hpp>
-#include<library/dataStruct/SafeDeque.hpp>
 
 
-#include<src/spring/GcObject.h>
+#include<gc/GcObject.h>
 
 #include<windows.h>
 

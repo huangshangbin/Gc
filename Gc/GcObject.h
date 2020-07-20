@@ -1,6 +1,6 @@
 #pragma once
 
-#include<src/spring/GcContainer.h>
+#include<gc/GcContainer.h>
 
 template<typename T>
 class GcObject
