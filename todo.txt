@@ -1,0 +1,8 @@
+1 GcObject 设置 HWND m_root成员。 初始化为0， 为0则是根对象。 不为0则不是。
+
+2 对象绑定指针列表如果有一个是根对象，则不能释放。 如果全是非根对象，如果有一个非根对象的根对象还未释放，则不能释放。
+  否则释放。移除在 pointRootPointMap m_objAddrBindPointAddrMap里面的数据。
+
+3 添加根对象是为了解决循环引用问题，以后类成员 GcObject 就需要设置根对象为 所在类对象地址。
+
+4 GcContainer 添加 pointRootPointMap。 非根对象删除时需要移除。 

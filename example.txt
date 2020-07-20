@@ -1,0 +1,115 @@
+可用:
+
+#include<src/spring/GcContainer.h>
+
+class Test
+{
+public:
+  int m_a = 10;
+
+public:
+  ~Test()
+  {
+    Console::out("Test release........");
+  }
+
+public:
+  virtual void fun()
+  {
+    Console::out("Test fun-----------");
+  }
+};
+
+class TestChild : public Test
+{
+public:
+  virtual void fun()
+  {
+    Console::out("TestChild fun--------------");
+  }
+};
+
+void gcTestThreadFun()
+{
+  while (true)
+  {
+    GcObject<Test> obj1 = GC_NEW(Test);
+    GcObject<Test> obj2 = obj1;
+    obj1 = obj2;
+    obj2 = obj1;
+
+    GcObject<Test> obj3 = std::move(obj2);
+    GcObject<Test> obj4 = obj3;
+    obj4 = std::move(obj2);
+
+    GC_NEW(Test);
+    GC_NEW(long);
+
+    GcObject<Test> childObj = GC_NEW(TestChild);
+    childObj->fun();
+
+    Sleep(1000);
+  }
+}
+
+
+void test(Napi::CallbackInfo& info)
+{
+  GcContainer::initContainer();
+
+  GC_ADD_TYPE(Test)
+  GC_ADD_TYPE(TestChild)
+  GC_ADD_TYPE(TestA)
+  GC_ADD_TYPE(TestB)
+
+  Console::out("main thread id = ", std::this_thread::get_id());
+
+   std::thread gcTestThread1(gcTestThreadFun);
+   std::thread gcTestThread2(gcTestThreadFun);
+
+   gcTestThread1.detach();
+   gcTestThread2.detach();
+
+  Sleep(2000);
+}
+
+
+不可用:
+
+class TestB;
+class TestA
+{
+public:
+  GcObject<TestB> m_testB;
+  
+};
+
+class TestB
+{
+public:
+  GcObject<TestA> m_testA;
+};
+
+void test(Napi::CallbackInfo& info)
+{
+  GcContainer::initContainer();
+
+  GC_ADD_TYPE(Test)
+  GC_ADD_TYPE(TestChild)
+  GC_ADD_TYPE(TestA)
+  GC_ADD_TYPE(TestB)
+
+  Console::out("main thread id = ", std::this_thread::get_id());
+
+  GcObject<TestA> testA = GC_NEW(TestA);
+  GcObject<TestB> testB = GC_NEW(TestB);
+  testA->m_testB = testB;
+  testB->m_testA = testA;
+
+  Console::out("testA ", (HWND)&testA);
+  Console::out("testB ", (HWND)&testB);
+  Console::out("testA->m_testB ", (HWND)&testA->m_testB);
+  Console::out("testB->m_testA ", (HWND)&testB->m_testA);
+
+  Sleep(2000);
+}
